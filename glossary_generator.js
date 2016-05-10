@@ -188,11 +188,13 @@ function generateGlossary(myText) {
         console.log("my parent is: "+ contentTerms[i].parentNode.nodeName);
         if (contentTerms[i].parentNode.nodeName == "link") {
             contentTerms[i].parentNode.setAttribute("target-id", "d" + newID);
+            contentTerms[i].parentNode.setAttribute("xmlns", "http://cnx.rice.edu/cnxml");
             console.log("matched to LINK, assigned target-id " + "d" + newID);
         } else {
             console.log("LINK not found, making new element");
             var newLink = xmlDoc.createElement("link");
             newLink.setAttribute("target-id", "d" + newID);
+            newLink.setAttribute("xmlns", "http://cnx.rice.edu/cnxml");
             contentTerms[i].parentNode.insertBefore(newLink, contentTerms[i]);
             newLink.appendChild(contentTerms[i]);
         }
@@ -214,12 +216,13 @@ function generateGlossary(myText) {
 
 function generateID(text) {
     text = text.toUpperCase();
-    var id = 0;
+    var id = "";
 
     for (var i = 0; i < text.length; i++) {
-        id += (text.charCodeAt(i) * 9999);
+        id += (text.charCodeAt(i)).toString();
     }
-    id = id % 100000;
+    
+    id = id.substr(0,40);
 
     return id;
 }
