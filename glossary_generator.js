@@ -46,6 +46,7 @@ function generateGlossary(myText) {
     // If no glossary tag exists, make one!
     if (xmlDoc.getElementsByTagName("glossary").length < 1) {
         var makeGlossary = xmlDoc.createElement("glossary");
+        makeGlossary.setAttribute("xmlns", "http://cnx.rice.edu/cnxml");
         xmlDoc.documentElement.appendChild(makeGlossary);
     }
 
@@ -75,7 +76,6 @@ function generateGlossary(myText) {
                 }
             }
             if (!match) {
-                console.log("not matched ["+c+"] ["+g+"]");
                 notInGlossary.push(contentTerms[i].cloneNode(true));
             }
         }
@@ -90,8 +90,11 @@ function generateGlossary(myText) {
             var newID = generateID(newTerm.childNodes[0].nodeValue);
 
             newDefinition.setAttribute("id", "d" + newID);
+            newDefinition.setAttribute("xmlns", "http://cnx.rice.edu/cnxml");
             newTerm.setAttribute("id", "t" + newID);
+            newTerm.setAttribute("xmlns", "http://cnx.rice.edu/cnxml");
             newMeaning.setAttribute("id", "m" + newID);
+            newMeaning.setAttribute("xmlns", "http://cnx.rice.edu/cnxml");
             newMeaning.appendChild(newText);
 
             newDefinition.appendChild(newTerm);
@@ -116,7 +119,6 @@ function generateGlossary(myText) {
                     var g = glossaryTerms[i].firstChild.nodeValue;
                     if (c.toUpperCase() == g.toUpperCase()) {
                         match = true;
-                        console.log("deleteUnusedTerms, matched ["+c+"] ["+g+"]");
                     }
                 }
             }
@@ -149,6 +151,7 @@ function generateGlossary(myText) {
         // Add our newly sorted definitions into a new glossary element and
         // replace the existing glossary with our new one
         var replacementGlossary = xmlDoc.createElement("glossary");
+        replacementGlossary.setAttribute("xmlns", "http://cnx.rice.edu/cnxml");
         for (var i = 0; i < newDefinitions.length; i++) {
             replacementGlossary.appendChild(newDefinitions[i]);
         }
@@ -167,8 +170,11 @@ function generateGlossary(myText) {
             var newID = generateID(newTerm.childNodes[0].nodeValue);
 
             newDefinition.setAttribute("id", "d" + newID);
+            newDefinition.setAttribute("xmlns", "http://cnx.rice.edu/cnxml");
             newTerm.setAttribute("id", "t" + newID);
+            newTerm.setAttribute("xmlns", "http://cnx.rice.edu/cnxml");
             newMeaning.setAttribute("id", "m" + newID);
+            newMeaning.setAttribute("xmlns", "http://cnx.rice.edu/cnxml");
             newMeaning.appendChild(newText);
 
             newDefinition.appendChild(newTerm);
@@ -184,14 +190,10 @@ function generateGlossary(myText) {
     for (var i = 0; i < contentTerms.length; i++) {
         var newID = generateID(contentTerms[i].childNodes[0].nodeValue);
         contentTerms[i].setAttribute("id", "c" + newID);
-        console.log("my name is " + contentTerms[i].childNodes[0].nodeValue);
-        console.log("my parent is: "+ contentTerms[i].parentNode.nodeName);
         if (contentTerms[i].parentNode.nodeName == "link") {
             contentTerms[i].parentNode.setAttribute("target-id", "d" + newID);
             contentTerms[i].parentNode.setAttribute("xmlns", "http://cnx.rice.edu/cnxml");
-            console.log("matched to LINK, assigned target-id " + "d" + newID);
         } else {
-            console.log("LINK not found, making new element");
             var newLink = xmlDoc.createElement("link");
             newLink.setAttribute("target-id", "d" + newID);
             newLink.setAttribute("xmlns", "http://cnx.rice.edu/cnxml");
@@ -201,7 +203,9 @@ function generateGlossary(myText) {
     }
 
     // Set the CodeMirror value to the document and format the output
-    editor.getDoc().setValue(serializer.serializeToString(xmlDoc));
+    var output = serializer.serializeToString(xmlDoc);
+    output = output.replace(/xmlns=""/g, "xmlns=\"http://cnx.rice.edu/cnxml\"");
+    editor.getDoc().setValue(output);
     var totalLines = editor.lineCount();
     var totalChars = editor.getDoc().getValue().length;
     editor.autoFormatRange({
@@ -221,8 +225,8 @@ function generateID(text) {
     for (var i = 0; i < text.length; i++) {
         id += (text.charCodeAt(i)).toString();
     }
-    
-    id = id.substr(0,40);
+
+    id = id.substr(0,50);
 
     return id;
 }
@@ -259,20 +263,15 @@ function mergeTerms() {
     var content = workingCode.getElementsByTagName("content")[0];
 
     var keep = document.getElementById("textKeep").value.trim();
-    console.log("keep "+keep);
     var merge = document.getElementById("textMerge").value.trim();
-    console.log("merge "+merge);
 
     if (!keep || !merge) {
         window.alert("Please check your IDs and try again.");
         return;
     }
 
-    console.log("post extraction");
     keep = extractID(keep);
-    console.log("keep "+keep);
     merge = extractID(merge);
-    console.log("merge "+merge);
 
     if (keep == merge) {
         window.alert("Same ID entered in both fields.");
@@ -304,7 +303,10 @@ function mergeTerms() {
     document.getElementById("textMerge").value = "";
 
     //Update editor text to reflect changes
-    editor.getDoc().setValue(serializer.serializeToString(workingCode));
+    var output = serializer.serializeToString(workingCode);
+    output = output.replace(/xmlns=""/g, "xmlns=\"http://cnx.rice.edu/cnxml\"");
+    editor.getDoc().setValue(output);
+
 }
 
 function extractID(myID) {
